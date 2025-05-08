@@ -83,6 +83,10 @@ HC - SR04 超声波传感器最大检测距离约为 4 米。已知声音在空�
 ## 接线
 将HC-SR04连接到Pi非常简单。将VCC引脚连接到Pi的5V引脚，将GND引脚连接到接地引脚。现在将触发和回声引脚分别连接到GPIO引脚23和24。
 ![接线示例图片](./pics/连接图.png)
+## 超声波测距原理
+<video src="https://gitee.com/mylylka/video/raw/master/超声测距.mov" controls>
+  你的浏览器不支持video标签。
+</video>
 ## 超声波测距流程图
 ![流程图](./pics/flow_chart.jpg)
 ## 超声波关键代码块
