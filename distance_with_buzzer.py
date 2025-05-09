@@ -4,115 +4,90 @@
 import RPi.GPIO as GPIO
 import time
 
-class HCSR04WithBuzzer:
-    def __init__(self, trigger_pin, echo_pin, buzzer_pin):
-        """初始化HC-SR04超声波传感器和蜂鸣器
+class HCSR04:
+    def __init__(self, trigger_pin, echo_pin, buzzer_pin=25):
+        """Initialize ultrasonic sensor and buzzer
         
         Args:
-            trigger_pin: 触发信号引脚
-            echo_pin: 回波信号引脚
-            buzzer_pin: 蜂鸣器信号引脚
+            trigger_pin: Trigger pin (BCM numbering)
+            echo_pin: Echo pin (BCM numbering)
+            buzzer_pin: Buzzer control pin (BCM numbering), default 25
         """
         self.trigger_pin = trigger_pin
         self.echo_pin = echo_pin
         self.buzzer_pin = buzzer_pin
         
-        # 设置GPIO模式为BCM
         GPIO.setmode(GPIO.BCM)
-        # 设置引脚模式
-        GPIO.setup(self.trigger_pin, GPIO.OUT)
+        GPIO.setup(self.trigger_pin, GPIO.OUT, initial=GPIO.LOW)
         GPIO.setup(self.echo_pin, GPIO.IN)
-        GPIO.setup(self.buzzer_pin, GPIO.OUT)
+        GPIO.setup(self.buzzer_pin, GPIO.OUT, initial=GPIO.LOW)  # Initialize buzzer pin
         
-        # 确保触发引脚和蜂鸣器引脚初始状态为低电平
-        GPIO.output(self.trigger_pin, False)
-        GPIO.output(self.buzzer_pin, False)
-        time.sleep(0.1)  # 等待传感器稳定
-    
-    def measure_distance(self):
-        """测量距离
-        
-        Returns:
-            float: 测量到的距离（厘米），如果测量失败返回None
-        """
+        time.sleep(2)  # Sensor stabilization time
+
+    def measure(self):
+        """Execute distance measurement"""
         try:
-            # 发送10us的触发信号
-            GPIO.output(self.trigger_pin, True)
-            time.sleep(0.00001)  # 10微秒
-            GPIO.output(self.trigger_pin, False)
+            # Send trigger signal
+            GPIO.output(self.trigger_pin, GPIO.HIGH)
+            time.sleep(0.00001)  # 10μs pulse
+            GPIO.output(self.trigger_pin, GPIO.LOW)
+            t0 = time.time()
             
-            # 等待回波信号
-            pulse_start = time.time()
-            timeout = pulse_start + 0.038  # 设置超时时间为38毫秒
+            # Wait for echo to go out
+            while GPIO.input(self.echo_pin) == GPIO.LOW:
+                if time.time() - t0 > 0.038:
+                    return float('inf')
             
-            # 等待回波信号开始
-            while GPIO.input(self.echo_pin) == 0:
-                pulse_start = time.time()
-                if pulse_start > timeout:
-                    return None
+            # Record emission time
+            t1 = time.time()
+
+            # Wait for echo to return
+            while GPIO.input(self.echo_pin) == GPIO.HIGH:
+                if time.time() - t0 > 0.038:
+                    return float('inf')
             
-            # 等待回波信号结束
-            pulse_end = time.time()
-            timeout = pulse_end + 0.038  # 重置超时时间
+            t2 = time.time()
             
-            while GPIO.input(self.echo_pin) == 1:
-                pulse_end = time.time()
-                if pulse_end > timeout:
-                    return None
-            
-            # 计算时间差
-            pulse_duration = pulse_end - pulse_start
-            
-            # 计算距离：声速为34300厘米/秒，来回距离需要除以2
-            distance = pulse_duration * 34300 / 2
-            
-            # 返回距离，保留2位小数
-            return round(distance, 2)
-            
+            # Calculate distance
+            return (t2 - t1) * 34300 / 2  # Unit: centimeters
+        
         except Exception as e:
-            print(f"测量出错: {str(e)}")
+            print(f"[ERROR] Measurement failed @ {time.strftime('%Y-%m-%d %H:%M:%S')}: {str(e)}")
             return None
-    
-    def control_buzzer(self, distance):
-        """根据距离控制蜂鸣器
+
+    def control_buzzer(self, distance, threshold=20):
+        """Control buzzer based on distance
         
         Args:
-            distance: 测量到的距离（厘米）
+            distance: Measured distance (cm)
+            threshold: Alarm threshold (cm), default 20cm
         """
-        if distance is not None and distance > 20:
-            GPIO.output(self.buzzer_pin, True)  # 距离超过20厘米，蜂鸣器响
-        else:
-            GPIO.output(self.buzzer_pin, False)  # 距离小于等于20厘米或测量失败，蜂鸣器不响
-    
-    def cleanup(self):
-        """清理GPIO设置"""
+        if distance is not None:
+            if distance > threshold:
+                GPIO.output(self.buzzer_pin, GPIO.HIGH)  # Activate buzzer
+            else:
+                GPIO.output(self.buzzer_pin, GPIO.LOW)   # Deactivate buzzer
+
+    def __del__(self):
+        """Automatically clean up GPIO on destruction"""
         GPIO.cleanup()
 
 # 使用示例
-def main():
+if __name__ == '__main__':
+    sensor = HCSR04(trigger_pin=23, echo_pin=24, buzzer_pin=25)
+    
     try:
-        # 创建HCSR04WithBuzzer实例，设置触发引脚为23，回波引脚为24，蜂鸣器引脚为25
-        sensor = HCSR04WithBuzzer(trigger_pin=23, echo_pin=24, buzzer_pin=25)
-        
-        print("开始测量距离，当距离超过20厘米时蜂鸣器将报警...")
-        print("按Ctrl+C退出...")
-        
+        print("Ultrasonic distance measurement with buzzer alarm in progress...")
         while True:
-            distance = sensor.measure_distance()
-            if distance is not None:
-                print(f"测量距离: {distance} 厘米")
-                sensor.control_buzzer(distance)
-            else:
-                print("测量失败，请检查连接")
-                sensor.control_buzzer(None)
+            dist = sensor.measure()
+            sensor.control_buzzer(dist, threshold=20)  # Control buzzer
             
-            # 等待0.5秒再次测量
+            if dist == float('inf') or dist > 400:
+                print("Out of measurement range")
+            elif dist is not None:
+                status = "ALARM" if dist > 20 else "NORMAL"
+                print(f"Distance: {dist:.2f} cm [{status}]")
+            
             time.sleep(0.5)
-            
     except KeyboardInterrupt:
-        print("\n程序已停止")
-    finally:
-        sensor.cleanup()
-
-if __name__ == "__main__":
-    main()
+        print("\nMeasurement ended")    
