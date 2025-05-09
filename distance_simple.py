@@ -28,17 +28,17 @@ class HCSR04:
             GPIO.output(self.trigger_pin, GPIO.LOW)
             t0 = time.time()
             # Wait for echo to go out
-            while GPIO.input(self.echo_pin) == 0:
+            while GPIO.input(self.echo_pin) == GPIO.LOW:
                 if time.time() - t0 > 0.038:
                     return float('inf')
             # Record emission time
             t1 = time.time()
 
             # Wait for echo to return
-            while GPIO.input(self.echo_pin) == 1:
+            while GPIO.input(self.echo_pin) == GPIO.HIGH:
                 if time.time() - t0 > 0.038:
                     return float('inf')
-                t2 = time.time()
+            t2 = time.time()
             
             # Calculate distance
             return (t2 - t1) * 34300 / 2  # Unit: centimeters
