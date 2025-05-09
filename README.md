@@ -1,6 +1,8 @@
 ![典型应用](./pics/usage.GIF)
+
 # 超声波
 蝙蝠发射超声波，遇到目标后产生回波。通过分析回波时间和强度，可以精确判断目标位置。
+
 ![回声定位](https://ts1.tc.mm.bing.net/th/id/R-C.4edea0a3749ec417b9e6bc3985db5adb?rik=i4TZ5eLrkpyjig&riu=http%3a%2f%2fn.sinaimg.cn%2fsinakd20123%2f98%2fw1098h600%2f20210119%2fac13-khxeamv6555224.jpg&ehk=E3miaUbFGpNv7bA0ejWbwbnTovzi%2bUhHetPddhJ9sLk%3d&risl=&pid=ImgRaw&r=0)
 
 ## 什么是超声波？
@@ -8,11 +10,15 @@
 人类可以听到每秒振动约20次（低沉的隆隆声）至每秒20,000次（高音调的哨声）的声波。然而，超声波的频率超过20,000Hz，超出了人类听觉上限。超声波具有方向性好、穿透能力强等特性
 
 ### 超声波频率范围频谱
+
 ![超声波频率范围](https://img2023.cnblogs.com/blog/2829072/202305/2829072-20230520163327969-25370657.png)
+
 # Raspberry Pi GPIO教程-超声波传感器
 
 ## HC-SR04硬件概述
+
 ![超声波传感器外观](https://www.zunxiang18.com/uploads/allimg/180727/150S91517-0.jpg)
+
 HC-SR04超声波距离传感器实际上由两个超声波换能器(Transducer)组成。一个用作发射器，将电信号转换为40KHz超声波脉冲。另一个用作接收器，监听发射的脉冲。
 
 该传感器可提供2厘米至400厘米之间出色的非接触式范围检测，精度为3毫米。
@@ -66,14 +72,23 @@ HC - SR04 超声波传感器最大检测距离约为 4 米。已知声音在空�
 
 ## 接线方法
 将HC-SR04连接到Pi非常简单。将VCC引脚连接到Pi的5V引脚，将GND引脚连接到接地引脚。现在将触发和回声引脚分别连接到GPIO引脚23和24。
+
 ![接线示例图片全母](./pics/全母连接图.png)
+
 ![接线示例图片面包板](https://mc.dfrobot.com.cn/data/attachment/forum/201907/12/160432tmj1py2s1aborbq0.png)
+
 ## 超声波测距原理
+
 ![视频](https://gitee.com/mylylka/video/raw/master/超声测距.gif)
+
 ## 超声波测距流程图
+
 ![流程图](./pics/flow_chart.jpg)
+
 ## 超声波关键代码块
+
 ![流程图](./pics/chart2code.png)
+
 ## 超声波测距代码（带超时验证及异常处理）
 输入以下代码：
 ```python
@@ -102,13 +117,42 @@ HC - SR04 超声波传感器最大检测距离约为 4 米。已知声音在空�
     return (t2 - t1) * 34300 / 2  # 单位：厘米
 
 ```
+## 代码运行
+- ssh admin@raspberrypi.local
+- snano distance.py （粘贴代码）
+- 保存退出：Ctrl + O → Enter → Ctrl + X
+- spython3 distance.py
+- sCtrl + C 退出
+
 ## 有哪些局限性？
 HC-SR04超声波传感器在精度和整体可用性方面确实非常出色，尤其是与其他低成本超声波传感器相比。这并不意味着HC-SR04传感器将会一直很好地工作。下图显示了HC-SR04的一些局限性：
 1. 传感器与物体/障碍物之间的距离大于4米(13ft)。
+
 ![示例图片](./pics/error1.png)
+
 2. 物体的反射面角度较小，因此声音不会反射回传感器。
+
 ![示例图片](./pics/error2.png)
+
 3. 物体太小，无法将足够多的声音反射回传感器。另外，如果您的HC-SR04传感器安装在设备上较低位置，则可能接收到从地板反射的声音。
+
 ![示例图片](./pics/error3.png)
+
 4. 一些表面柔软、不规则的物体（例如毛绒动物）会吸收声音而不是反射声音，因此HC-SR04传感器可能难以检测到此类物体。
+
 ![示例图片](./pics/error4.png)
+
+## GPIO busy解决方法
+
+1 切记control+c退出，不要control+z （只是暂时前台退出，后台还在占用端口）
+2 取消占用方法：
+- 查看所有Python进程
+ps aux | grep python
+
+- 强制终止所有残留进程
+sudo kill -9 PID  # 根据实际进程ID操作
+
+- 清除所有GPIO占用状态
+sudo gpio unexportall  # 清理GPIO状态
+![示例图片](./pics/gpio_busy.png)
+  
