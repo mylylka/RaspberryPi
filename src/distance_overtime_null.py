@@ -26,7 +26,6 @@ def measure_distance():
         GPIO.output(TRIG_PIN, GPIO.HIGH)
         time.sleep(0.00001)  # 10微秒脉冲
         GPIO.output(TRIG_PIN, GPIO.LOW)
-        t0 = time.time()
         
         # 等待回声信号发出
         while GPIO.input(ECHO_PIN) == GPIO.LOW:

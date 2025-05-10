@@ -53,7 +53,7 @@ print("Ultrasonic distance measurement in progress...")
 try:
     while True:
         dist = measure_distance()
-        if dist == float('inf') or dist > 400:
+        if dist > 400:
             print("Out of measurement range")
         elif dist is not None:
             print(f"Distance: {dist:.2f} cm")  
