@@ -207,12 +207,29 @@
 <h4 id="代码运行"><strong>代码运行</strong> </h4>
 <ul>
 <li>ssh admin@raspberrypi.local</li>
+</ul>
+<p><strong>非虚拟环境运行步骤</strong></p>
+<ul>
 <li>nano <a href="http://distance.py">distance.py</a> （粘贴代码到文件中）</li>
 <li>保存退出：Ctrl + O → Enter → Ctrl + X</li>
 <li>python3 <a href="http://distance.py">distance.py</a></li>
-<li>Ctrl + C 退出<br>
-<strong>补充</strong></li>
-<li><strong>接线检查检查点</strong>：<br>
+<li>Ctrl + C 退出</li>
+</ul>
+<p><strong>虚拟环境运行步骤</strong></p>
+<ul>
+<li>mkdir ~/dist_env</li>
+<li>cd ~/dist_env</li>
+<li>python3 -m venv venv</li>
+<li>source venv/bin/activate</li>
+<li>pip install RPi.GPIO</li>
+<li>nano <a href="http://distance.py">distance.py</a></li>
+<li>python3 <a href="http://distance.py">distance.py</a></li>
+<li>Ctrl + C 退出</li>
+<li>deactivate</li>
+</ul>
+<p><strong>补充</strong></p>
+<ul>
+<li>接线检查检查点：<br>
 ✅ VCC是否接5V？<br>
 ✅ GPIO编号是否正确？（23和24）</li>
 <li>测试时观察哪些情况会导致传感器测距不准</li>
@@ -249,6 +266,7 @@
 </ul>
 </li>
 </ul>
+<hr>
 <h3 id="5-创意拓展坐姿提醒器--倒车报警"><strong>5. 创意拓展：坐姿提醒器 + 倒车报警</strong> </h3>
 <h4 id="材料升级"><strong>材料升级</strong> </h4>
 <ul>
@@ -308,6 +326,7 @@
 </code></pre></li>
 </ul>
 <p><a href="./src/distance_with_buzzer_v2.py">distance_with_buzzer_v2</a></p>
+<hr>
 <h3 id="6-常见问题解答"><strong>6. 常见问题解答</strong> </h3>
 <ul>
 <li>代码报错“GPIO被占用”？<br>
