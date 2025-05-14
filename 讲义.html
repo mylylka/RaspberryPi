@@ -175,11 +175,6 @@
 <p><img src="./pics/%E6%97%A0%E9%9D%A2%E5%8C%85%E6%9D%BF%E5%BC%95%E8%84%9A%E5%9B%BE.jpg" alt="接线示例图片全母"><br>
 【通过面包板连接图】</p>
 <p><img src="./pics/%E5%B8%A6%E9%9D%A2%E5%8C%85%E6%9D%BF%E5%BC%95%E8%84%9A%E5%9B%BE.jpg" alt="接线示例图片面包板"></p>
-<ul>
-<li><strong>检查点</strong>：<br>
-✅ VCC是否接5V？<br>
-✅ GPIO编号是否正确？（23和24）</li>
-</ul>
 <hr>
 <h3 id="4-编程实战测距小实验"><strong>4. 编程实战：测距小实验</strong> </h3>
 <ul>
@@ -201,8 +196,9 @@
 <li>传感器损坏时，echo 引脚可能始终为低电平，代码将永远无法退出第一个循环。</li>
 </ul>
 </li>
-<li>如果超过38ms没回声，说明“太远或没障碍物”（返回<code>无限大</code>）。<br>
+<li>如果超过38ms没回声，说明“太远或没障碍物”（返回<code>无限大</code>——float('inf') 用于表示正无穷大）。<br>
 <a href="./src/distance_overtime_null.py">distance_overtime_null</a><br>
+完整代码<br>
 <a href="./src/distance_simple.py">distance_simple</a></li>
 </ul>
 </li>
@@ -214,7 +210,12 @@
 <li>nano <a href="http://distance.py">distance.py</a> （粘贴代码到文件中）</li>
 <li>保存退出：Ctrl + O → Enter → Ctrl + X</li>
 <li>python3 <a href="http://distance.py">distance.py</a></li>
-<li>Ctrl + C 退出</li>
+<li>Ctrl + C 退出<br>
+<strong>补充</strong></li>
+<li><strong>接线检查检查点</strong>：<br>
+✅ VCC是否接5V？<br>
+✅ GPIO编号是否正确？（23和24）</li>
+<li>测试时观察哪些情况会导致传感器测距不准</li>
 </ul>
 <h4 id="局限与改进"><strong>局限与改进</strong> </h4>
 <p><strong>（为什么测不准？）</strong></p>
@@ -332,7 +333,7 @@ sudo gpio unexportall  # 清理GPIO状态<br>
 <hr>
 <h3 id="教学总结">教学总结 </h3>
 <ol>
-<li><strong>原理</strong>：超声波传感器通过发射/接收40kHz脉冲测距，利用声速(343m/s)计算往返时间。</li>
+<li><strong>原理</strong>：超声波传感器通过发射/接收40kHz脉冲测距，利用声速(343m/s)计算距离。</li>
 <li><strong>核心代码</strong>：触发10μs高电平启动测量，记录Echo高电平持续时间，超时38ms返回无限大。</li>
 <li><strong>接线关键</strong>：VCC接5V，Trig/Echo接GPIO，注意避免引脚冲突。</li>
 <li><strong>局限</strong>：最大测距4米，受物体材质、角度影响，柔软/小物体可能无法反射。</li>
